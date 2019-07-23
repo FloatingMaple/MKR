@@ -22,6 +22,7 @@ class MKR(object):
         self.vars_rs = []
         self.vars_kge = []
 
+    # 变量的占位符
     def _build_inputs(self):
         self.user_indices = tf.placeholder(tf.int32, [None], 'user_indices')
         self.item_indices = tf.placeholder(tf.int32, [None], 'item_indices')
@@ -34,13 +35,16 @@ class MKR(object):
         self._build_low_layers(args)
         self._build_high_layers(args)
 
+    # 创建低层
     def _build_low_layers(self, args):
+        # 创建用户嵌入矩阵的tf变量，其shape为用户数*嵌入维度
         self.user_emb_matrix = tf.get_variable('user_emb_matrix', [self.n_user, args.dim])
         self.item_emb_matrix = tf.get_variable('item_emb_matrix', [self.n_item, args.dim])
         self.entity_emb_matrix = tf.get_variable('entity_emb_matrix', [self.n_entity, args.dim])
         self.relation_emb_matrix = tf.get_variable('relation_emb_matrix', [self.n_relation, args.dim])
 
         # [batch_size, dim]
+        # 选取user_emb_matrix张量中，user_indices为索引时对应的元素
         self.user_embeddings = tf.nn.embedding_lookup(self.user_emb_matrix, self.user_indices)
         self.item_embeddings = tf.nn.embedding_lookup(self.item_emb_matrix, self.item_indices)
         self.head_embeddings = tf.nn.embedding_lookup(self.entity_emb_matrix, self.head_indices)
@@ -48,8 +52,10 @@ class MKR(object):
         self.tail_embeddings = tf.nn.embedding_lookup(self.entity_emb_matrix, self.tail_indices)
 
         for _ in range(args.L):
+            # Dense 一个线性回归过程
             user_mlp = Dense(input_dim=args.dim, output_dim=args.dim)
             tail_mlp = Dense(input_dim=args.dim, output_dim=args.dim)
+            # 交叉压缩单元
             cc_unit = CrossCompressUnit(args.dim)
             self.user_embeddings = user_mlp(self.user_embeddings)
             self.item_embeddings, self.head_embeddings = cc_unit([self.item_embeddings, self.head_embeddings])
@@ -60,6 +66,7 @@ class MKR(object):
             self.vars_kge.extend(tail_mlp.vars)
             self.vars_kge.extend(cc_unit.vars)
 
+    # 创建高层
     def _build_high_layers(self, args):
         # RS
         use_inner_product = True

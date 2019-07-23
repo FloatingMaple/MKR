@@ -48,8 +48,11 @@ parser.add_argument('--lr_kge', type=float, default=2e-4, help='learning rate of
 parser.add_argument('--kge_interval', type=int, default=2, help='training interval of KGE task')
 '''
 
-show_loss = False
-show_topk = False
+#show_loss = False
+#show_topk = False
+
+show_loss = True
+show_topk = True
 
 args = parser.parse_args()
 data = load_data(args)

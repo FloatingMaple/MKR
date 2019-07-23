@@ -10,6 +10,7 @@ def load_data(args):
     return n_user, n_item, n_entity, n_relation, train_data, eval_data, test_data, kg
 
 
+# 读取评分文件,写入ratings_final
 def load_rating(args):
     print('reading rating file ...')
 
@@ -21,19 +22,23 @@ def load_rating(args):
         rating_np = np.loadtxt(rating_file + '.txt', dtype=np.int32)
         np.save(rating_file + '.npy', rating_np)
 
+    # 用户数
     n_user = len(set(rating_np[:, 0]))
+    # 物品数
     n_item = len(set(rating_np[:, 1]))
     train_data, eval_data, test_data = dataset_split(rating_np)
 
     return n_user, n_item, train_data, eval_data, test_data
 
 
+# 训练集60%，验证集20%，测试集20%
 def dataset_split(rating_np):
     print('splitting dataset ...')
 
     # train:eval:test = 6:2:2
     eval_ratio = 0.2
     test_ratio = 0.2
+    # shape[0] 读取矩阵的行数
     n_ratings = rating_np.shape[0]
 
     eval_indices = np.random.choice(list(range(n_ratings)), size=int(n_ratings * eval_ratio), replace=False)
@@ -47,7 +52,7 @@ def dataset_split(rating_np):
 
     return train_data, eval_data, test_data
 
-
+# 加载kg，写入kg_final
 def load_kg(args):
     print('reading KG file ...')
 
